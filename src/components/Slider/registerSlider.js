@@ -25,7 +25,7 @@ const registerSlider = ({ data, sliderRefs, chart }) => {
     ...DEFAULT_SLIDER_OPTIONS
   });
   // 更新缩略轴
-  const updateSlider = (shouldRender, chart) => {
+  const updateSlider = (shouldRender) => {
     chart.option('slider', {
       start: startRef.current,
       end: endRef.current,
@@ -34,7 +34,7 @@ const registerSlider = ({ data, sliderRefs, chart }) => {
     shouldRender && chart.render();
   }
   // 滑动更新视图
-  const updataOnMove = (ev, chart) => {
+  const updataOnMove = (ev) => {
     const { points, deltaX, currentTarget } = ev;
     const { cfg } = currentTarget
     const canvasHeight = cfg.height // 视图区域的高度
@@ -55,10 +55,10 @@ const registerSlider = ({ data, sliderRefs, chart }) => {
     }
     startRef.current = formateRatio(startRef.current)
     endRef.current = formateRatio(endRef.current)
-    window.requestAnimationFrame(() => updateSlider(points[0].y < maxY, chart));
+    window.requestAnimationFrame(() => updateSlider(points[0].y < maxY));
   }
   // 缩放更新视图
-  const updateOnZoom = (ev, chart) => {
+  const updateOnZoom = (ev) => {
     const { points, zoom, currentTarget } = ev;
     const { cfg } = currentTarget
     const canvasHeight = cfg.height // 视图区域的高度
@@ -76,23 +76,23 @@ const registerSlider = ({ data, sliderRefs, chart }) => {
       return
     }
     endRef.current = formateRatio(endRef.current)
-    window.requestAnimationFrame(() => updateSlider(points[0].y < maxY, chart));
+    window.requestAnimationFrame(() => updateSlider(points[0].y < maxY));
   }
   // 更新视图
-  const updateChart = debounce((ev, chart, type) => {
+  const updateChart = debounce((ev, type) => {
     if (type === 'pan') {
-      updataOnMove(ev, chart)
+      updataOnMove(ev)
     } else {
-      updateOnZoom(ev, chart)
+      updateOnZoom(ev)
     }
   }, 0)
   // 滑动
   chart.on('pan', (ev) => {
-    updateChart(ev, chart, 'pan')
+    updateChart(ev, 'pan')
   })
   // 缩放
   chart.on('pinch', (ev) => {
-    updateChart(ev, chart, 'pinch')
+    updateChart(ev, 'pinch')
   })
   return chart
 }
