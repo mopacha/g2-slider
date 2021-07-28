@@ -3,21 +3,15 @@ import { registerComponentController } from '@antv/g2';
 import Gestrue from '@antv/g2/lib/chart/controller/gesture';
 import { debounce } from 'lodash';
 
+import {
+  BASE_LEN,
+  DEFAULT_SLIDER_OPTIONS
+} from './constants'
+
 registerComponentController('gesture', Gestrue);
 
 const registerSlider = ({ data, refs }) => {
-  const { startRef, endRef, originX, originZoom, baseRateRef, chartRef } = refs;
-  // 以10条作为基准
-  const BASE_LEN = 10;
-  //默认一些缩略轴配置
-  const defaultSliderOptions = {
-    smooth: true,
-    handlerStyle: {
-      width: 0,
-      height: 0,
-      fill: 'red',
-    }
-  };
+  const { startRef, endRef, preDeltaXRef, preZoomRef, baseRateRef, chartRef } = refs;
 
   let baseRate = 1
   if (data.length > BASE_LEN) {
@@ -32,7 +26,7 @@ const registerSlider = ({ data, refs }) => {
   chartRef.current.option('slider', {
     start: 0,
     end: baseRate,
-    ...defaultSliderOptions
+    ...DEFAULT_SLIDER_OPTIONS
   });
 
   // 更新缩略轴
@@ -40,17 +34,16 @@ const registerSlider = ({ data, refs }) => {
     chart.option('slider', {
       start: startRef.current,
       end: endRef.current,
-      ...defaultSliderOptions
+      ...DEFAULT_SLIDER_OPTIONS
     });
     reRenderChart && chart.render();
   }
 
   const updateChart = debounce((ev, chart) => {
-    const { points, direction, deltaX, deltaY, target, currentTarget } = ev;
+    const { points, deltaX, currentTarget } = ev;
     const { cfg } = currentTarget
-    const moveX = deltaX - originX.current // 每次移动的像素 
+    const moveX = deltaX - preDeltaXRef.current // 每次移动的像素 
     const canvasHeight = cfg.height // canvas 宽度
-    //setText(`y:${points[0].y}`);
     const maxX = canvasHeight - 40 // 最大滑动区域，目的是排除缩略轴区域
     const intervalMoveRaate = 0.005 // 每次移动的百分比
     const movexRate = moveX > 0 ? intervalMoveRaate : -intervalMoveRaate
@@ -58,7 +51,7 @@ const registerSlider = ({ data, refs }) => {
     if (moveX > 2) {
       // 右移
       if (endRef.current + movexRate < 1) {
-        originX.current = deltaX // 更新手势当前已经移动的像素
+        preDeltaXRef.current = deltaX // 更新手势当前已经移动的像素
         // 没有移动到终点的时候才改变start 和end
         startRef.current = startRef.current + movexRate
         endRef.current = endRef.current + movexRate
@@ -68,7 +61,7 @@ const registerSlider = ({ data, refs }) => {
     } else if (moveX < -2) {
       // 左移
       if (startRef.current + movexRate > 0) {
-        originX.current = deltaX // 更新手势当前已经移动的像素
+        preDeltaXRef.current = deltaX // 更新手势当前已经移动的像素
         // 左移没超过
         startRef.current = startRef.current + movexRate
         endRef.current = endRef.current + movexRate
@@ -86,7 +79,7 @@ const registerSlider = ({ data, refs }) => {
     const { cfg } = currentTarget
     const canvasHeight = cfg.height // canvas 宽度
     const maxX = canvasHeight - 40 // 最大滑动区域，目的是排除缩略轴区域
-    const currentZoom = zoom - originZoom.current // 每次缩放的比例 , 用于判断缩小还是放大
+    const currentZoom = zoom - preZoomRef.current // 每次缩放的比例 , 用于判断缩小还是放大
     const zoomMoveRate = 0.005 // 每次缩放的百分比
 
     //setText(`currentZoom:${currentZoom}`);
@@ -94,7 +87,7 @@ const registerSlider = ({ data, refs }) => {
       // 放大，数量变少， start 不变，end 变小
       if (endRef.current - zoomMoveRate > 0) {
         endRef.current = endRef.current - zoomMoveRate
-        originZoom.current = zoom
+        preZoomRef.current = zoom
       } else {
         return
       }
@@ -102,7 +95,7 @@ const registerSlider = ({ data, refs }) => {
       // 缩小，数量变多, start 不变，end 变大，但end 不会超过1
       if (endRef.current + zoomMoveRate <= 1) {
         endRef.current = endRef.current + zoomMoveRate
-        originZoom.current = zoom
+        preZoomRef.current = zoom
       } else {
         return
       }
