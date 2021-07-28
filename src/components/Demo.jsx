@@ -14,7 +14,7 @@ const Demo = () => {
     { year: '1961', sales: 8 },
   ];
 
-  for (let i = 1; i < 8; i++) {
+  for (let i = 1; i < 88; i++) {
     data.push({
       year: `${1961 + i}`,
       sales: Math.random() * 12 + i
