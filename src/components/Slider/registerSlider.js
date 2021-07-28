@@ -2,41 +2,34 @@
 import { registerComponentController } from '@antv/g2';
 import Gestrue from '@antv/g2/lib/chart/controller/gesture';
 import { debounce } from 'lodash';
-
 import {
   BASE_LEN,
   DEFAULT_SLIDER_OPTIONS
 } from './constants'
+import { formateRatio } from './utils'
 
 registerComponentController('gesture', Gestrue);
 
 const registerSlider = ({ data, refs }) => {
-  const { startRef, endRef, preDeltaXRef, preZoomRef, baseRateRef, chartRef } = refs;
-
-  let baseRate = 1
+  const { startRef, endRef, preDeltaXRef, preZoomRef, chartRef } = refs
   if (data.length > BASE_LEN) {
-    baseRate = BASE_LEN / data.length
-    baseRate = Math.floor(baseRate * 1000) / 1000
-    baseRateRef.current = baseRate
-  };
-
-  startRef.current = 0.000
-  endRef.current = baseRate
+    endRef.current = formateRatio(BASE_LEN / data.length)
+  }
   // 开启缩略轴组件
   chartRef.current.option('slider', {
     start: 0,
-    end: baseRate,
+    end: endRef.current,
     ...DEFAULT_SLIDER_OPTIONS
   });
 
   // 更新缩略轴
-  const updateSlider = (reRenderChart, chart) => {
+  const updateSlider = (shouldRender, chart) => {
     chart.option('slider', {
       start: startRef.current,
       end: endRef.current,
       ...DEFAULT_SLIDER_OPTIONS
     });
-    reRenderChart && chart.render();
+    shouldRender && chart.render();
   }
 
   const updateChart = debounce((ev, chart) => {
@@ -82,7 +75,6 @@ const registerSlider = ({ data, refs }) => {
     const currentZoom = zoom - preZoomRef.current // 每次缩放的比例 , 用于判断缩小还是放大
     const zoomMoveRate = 0.005 // 每次缩放的百分比
 
-    //setText(`currentZoom:${currentZoom}`);
     if (currentZoom > 0) {
       // 放大，数量变少， start 不变，end 变小
       if (endRef.current - zoomMoveRate > 0) {
@@ -105,18 +97,14 @@ const registerSlider = ({ data, refs }) => {
 
   // 滑动
   chartRef.current.on('pan', (ev) => {
-
     updateChart(ev, chartRef.current)
-  });
+  })
   // 缩放
   chartRef.current.on('pinch', (ev) => {
     zoomChart(ev, chartRef.current)
-  });
-
-  console.log('3 registerSlider')
+  })
 
   return chartRef.current
 }
-
 
 export default registerSlider
