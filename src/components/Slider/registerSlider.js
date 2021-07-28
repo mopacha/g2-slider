@@ -80,7 +80,8 @@ const registerSlider = ({ data, refs }) => {
     } else {
       return
     }
-
+    
+    endRef.current = formateRatio(endRef.current)
     window.requestAnimationFrame(() => updateSlider(points[0].y < maxY, chart));
   }, 0)
 
