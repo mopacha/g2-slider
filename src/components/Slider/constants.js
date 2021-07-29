@@ -4,7 +4,7 @@ export const DEFAULT_SLIDER_OPTIONS = { // 默认一些缩略轴配置
   handlerStyle: {
     width: 0,
     height: 0,
-    fill: 'red',
+    fill: '#e2e8f9',
   }
 };
 export const MOVE_INTERVAL_RATE = 0.005; // 每次移动的比率，根据数量量多少计算效果不好，这里写死
