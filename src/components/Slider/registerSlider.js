@@ -1,6 +1,7 @@
-import { registerComponentController } from '@antv/g2';
 import Gestrue from '@antv/g2/lib/chart/controller/gesture';
+import { registerComponentController } from '@antv/g2';
 import { debounce } from 'lodash';
+import mobileSlider from './mobileSlider';
 import {
   BASE_LEN,
   DEFAULT_SLIDER_OPTIONS,
@@ -11,7 +12,10 @@ import {
 } from './constants';
 import { formateRatio } from './utils';
 
+// 引入 gestrue 手势组件
 registerComponentController('gesture', Gestrue);
+// 引入 slider 组件
+registerComponentController('slider', mobileSlider);
 
 const registerSlider = ({ data, sliderRefs, chart }) => {
   const [startRef, endRef, preDeltaXRef, preZoomRef] = sliderRefs;
